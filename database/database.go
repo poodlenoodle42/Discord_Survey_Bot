@@ -1,4 +1,4 @@
-package datavase
+package database
 
 import "gorm.io/gorm"
 
