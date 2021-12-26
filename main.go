@@ -14,6 +14,9 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
+	for _, p := range m.Mentions {
+		fmt.Println(p.Username)
+	}
 	//m.Member.Roles
 }
 
