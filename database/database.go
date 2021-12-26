@@ -2,6 +2,8 @@ package database
 
 import (
 	"errors"
+	"fmt"
+	"math/rand"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -27,8 +29,8 @@ type PollType struct {
 	Votes map[string]int //Mappes Role ID to Votes
 }
 
-var PollTypes = map[string]*PollType{}
-var activePolls = map[int]*Poll{}
+var PollTypes map[string]*PollType
+var activePolls map[int]*Poll //ID to polls
 
 func get_votes(user *discordgo.Member, poll *Poll) int {
 	votes := 0
@@ -78,6 +80,28 @@ func Check_Finished() []*Poll {
 	return finished_polls
 }
 
-func New_Poll() {
+func New_Poll(username string, message string, role string) (*Poll, error) {
+	var poll_type string
+	var needed_votes int
+
+	scaned, err := fmt.Scanf("$new %s %d", &poll_type, &needed_votes)
+	if scaned != 2 {
+		return nil, err
+	}
+	t, ex := PollTypes[poll_type]
+	if ex {
+		return nil, errors.New("Poll type does not exist")
+	}
+	p := new(Poll)
+	p.AllowedRole = role
+	p.Author = username
+	p.Id = rand.Int()
+	p.NeededVotes = needed_votes
+	p.TotalVotesAgainst = 0
+	p.TotalVotesFor = 0
+	p.Voted = make([]Vote, 0)
+	p.T = t
+	activePolls[p.Id] = p
+	return p, nil
 
 }
