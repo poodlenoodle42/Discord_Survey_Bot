@@ -8,15 +8,21 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/poodlenoodle42/Discord_Survey_Bot/config"
+	"github.com/poodlenoodle42/Discord_Survey_Bot/database"
 )
 
 func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.ID == s.State.User.ID {
 		return
+	} else if m.Content[0] != '$' {
+		return
+	} else if m.Content[1:3] == "new" {
+		poll, err := database.New_Poll(m.Author.Username, m.Content, m.MentionRoles[0])
+		//Sent poll
+	} else if m.Content[1:4] == "vote" {
+
 	}
-	for _, p := range m.Mentions {
-		fmt.Println(p.Username)
-	}
+
 	//m.Member.Roles
 }
 

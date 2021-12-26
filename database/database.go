@@ -1,15 +1,17 @@
 package database
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
+	"os"
 
 	"github.com/bwmarrin/discordgo"
 )
 
 type Vote struct {
-	Person string //ID
+	Person string //Username
 	Vote   bool   //False -> against , True -> for
 }
 
@@ -31,6 +33,7 @@ type PollType struct {
 
 var PollTypes map[string]*PollType
 var activePolls map[int]*Poll //ID to polls
+var logfile os.File
 
 func get_votes(user *discordgo.Member, poll *Poll) int {
 	votes := 0
@@ -56,11 +59,18 @@ func User_Vote(user *discordgo.Member, poll_id int, vote bool) error {
 	if !exists {
 		return errors.New("Poll does not exist")
 	}
+
+	for _, v := range poll.Voted {
+		if v.Person == user.User.Username {
+			return errors.New("Already voted")
+		}
+	}
+
 	votes := get_votes(user, poll)
 	if votes == 0 {
 		return errors.New("Not allowed to vote in the poll")
 	}
-	poll.Voted = append(poll.Voted, Vote{user.User.ID, vote})
+	poll.Voted = append(poll.Voted, Vote{user.User.Username, vote})
 	if vote {
 		poll.TotalVotesFor += votes
 	} else {
@@ -103,5 +113,9 @@ func New_Poll(username string, message string, role string) (*Poll, error) {
 	p.T = t
 	activePolls[p.Id] = p
 	return p, nil
+}
 
+func Log(poll *Poll) {
+	b, _ := json.Marshal(poll)
+	logfile.Write(b)
 }
